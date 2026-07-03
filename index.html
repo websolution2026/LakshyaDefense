@@ -591,7 +591,7 @@ function openAdmForm(){
   '<div class="form-row"><div class="fg"><label>Phone *</label><input id="fp" placeholder="Mobile Number" type="tel"/></div><div class="fg"><label>Aadhar Number</label><input id="fe" placeholder="12-digit Aadhar No." type="text" maxlength="12" pattern="[0-9]{12}"/></div></div>'+
   '<div class="form-row"><div class="fg"><label>Date of Birth</label><input id="fd" type="date"/></div><div class="fg"><label>Course *</label><select id="fc">'+COURSES.map(function(c){ return '<option>'+c+'</option>'; }).join('')+'</select></div></div>'+
   '<div class="form-row"><div class="fg"><label>Joining Date *</label><input id="fj" type="date" value="'+today()+'"/></div><div class="fg"><label>Status</label><select id="fs"><option value="active">Active</option><option value="inactive">Inactive</option></select></div></div>'+
-  '<div class="form-row"><div class="fg"><label>Monthly Fee (₹) *</label><input id="fm" type="number" value="1000"/></div><div class="fg"><label>Admission Fee (₹)</label><input id="fa" type="number" value="5000"/></div></div>'+
+  '<div class="form-row"><div class="fg"><label>Monthly Fee (₹) *</label><input id="fm" type="number" value="5000"/></div><div class="fg"><label>Admission Fee (₹)</label><input id="fa" type="number" value="2000"/></div></div>'+
   '<div class="fg"><label>Address</label><textarea id="fad" rows="2" placeholder="Poora address..."></textarea></div>'+
   '<div style="background:var(--sf2);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--mut)">✏️ Entry by: <b style="color:var(--gold)">'+currentUser.display+'</b></div>',
   '<button class="btn btn-gold" style="flex:1" onclick="submitAdm()">✅ Register</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
