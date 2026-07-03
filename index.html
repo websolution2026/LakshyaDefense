@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lakshya Defense Academy – Ranchi</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#07090f;--sf:#0d1117;--sf2:#111827;--bdr:#1c2a3a;
+  --gold:#c9a84c;--gold2:#e6c97a;--gdim:#7a6030;
+  --grn:#16a34a;--grn2:#22c55e;--red:#dc2626;--red2:#ef4444;
+  --blu:#1d4ed8;--blu2:#3b82f6;--org:#ea580c;--org2:#f97316;
+  --txt:#eae5d8;--mut:#6b7a90;--mut2:#9aa3b2;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:'Barlow',sans-serif;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:var(--gdim);border-radius:4px;}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-box{background:var(--sf);border:1px solid var(--bdr);border-radius:20px;padding:36px 28px;width:100%;max-width:380px;text-align:center;}
+.login-logo{font-size:48px;margin-bottom:12px;}
+.login-title{font-family:'Cinzel',serif;color:var(--gold);font-size:22px;font-weight:700;margin-bottom:4px;}
+.login-sub{color:var(--mut);font-size:13px;margin-bottom:28px;}
+.login-box .fg{text-align:left;margin-bottom:14px;}
+.login-err{color:var(--red2);font-size:13px;margin-top:8px;min-height:18px;}
+.user-chips{display:flex;gap:8px;margin-bottom:20px;justify-content:center;}
+.uchip{padding:6px 16px;border-radius:20px;border:1.5px solid var(--bdr);background:transparent;color:var(--mut2);font-family:'Barlow',sans-serif;font-size:13px;cursor:pointer;transition:all .18s;}
+.uchip.active{border-color:var(--gold);color:var(--gold);background:#c9a84c11;}
+
+/* ── TOPBAR ── */
+#topbar{position:fixed;top:0;left:0;right:0;height:54px;background:var(--sf);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:300;gap:10px;}
+#menu-btn{background:none;border:1.5px solid var(--bdr);color:var(--mut2);width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.top-title{font-family:'Cinzel',serif;color:var(--gold);font-size:13px;letter-spacing:.8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.top-user{font-size:12px;color:var(--mut2);background:var(--sf2);border:1px solid var(--bdr);border-radius:20px;padding:4px 12px;white-space:nowrap;}
+.top-logout{background:none;border:1px solid var(--bdr);color:var(--mut);padding:4px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-family:'Barlow',sans-serif;}
+.top-logout:hover{color:var(--red2);border-color:var(--red2);}
+.top-date{font-size:11px;color:var(--mut);white-space:nowrap;}
+
+/* ── OVERLAY / SIDEBAR ── */
+#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:350;backdrop-filter:blur(2px);}
+#overlay.show{display:block;}
+#sidebar{position:fixed;top:0;left:-260px;width:240px;height:100vh;background:var(--sf);border-right:1px solid var(--bdr);z-index:400;transition:left .28s ease;display:flex;flex-direction:column;overflow:hidden;}
+#sidebar.open{left:0;}
+.sb-logo{padding:16px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;min-height:60px;}
+.sb-ico{width:36px;height:36px;flex-shrink:0;background:#c9a84c22;border:1.5px solid var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;}
+.sb-t1{font-family:'Cinzel',serif;color:var(--gold);font-size:14px;font-weight:700;}
+.sb-t2{font-family:'Cinzel',serif;color:var(--mut);font-size:9px;letter-spacing:1px;margin-top:1px;}
+nav{padding:12px 8px;flex:1;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:12px 13px;border-radius:9px;margin-bottom:3px;cursor:pointer;border:1px solid transparent;transition:all .18s;color:var(--mut);font-weight:500;font-size:15px;}
+.nav-item:hover{background:#c9a84c0d;color:var(--txt);}
+.nav-item.active{background:#c9a84c1a;border-color:#c9a84c33;color:var(--gold);}
+.nav-icon{font-size:20px;flex-shrink:0;width:24px;text-align:center;}
+.nav-role-badge{font-size:10px;padding:2px 8px;border-radius:10px;margin:8px 14px 4px;color:var(--mut);border:1px solid var(--bdr);text-align:center;letter-spacing:.5px;text-transform:uppercase;}
+
+/* ── MAIN ── */
+#main{padding-top:54px;min-height:100vh;}
+#content{padding:20px 16px;max-width:960px;margin:0 auto;}
+
+/* ── PAGE HEADER ── */
+.ph{margin-bottom:22px;}
+.ph-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px;}
+.ph-title{font-family:'Cinzel',serif;color:var(--gold);font-size:22px;font-weight:700;}
+.ph-sub{color:var(--mut2);font-size:13px;}
+
+/* ── STAT GRID ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px;}
+@media(min-width:600px){.stat-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:800px){.stat-grid{grid-template-columns:repeat(6,1fr);}}
+.stat-card{background:var(--sf);border:1px solid var(--bdr);border-radius:12px;padding:14px 16px;}
+.stat-icon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px;}
+.stat-lbl{font-size:10px;color:var(--mut);letter-spacing:.7px;text-transform:uppercase;margin-bottom:4px;}
+.stat-val{font-family:'Cinzel',serif;font-size:18px;font-weight:700;line-height:1.2;}
+
+/* ── CARD ── */
+.card{background:var(--sf);border:1px solid var(--bdr);border-radius:12px;padding:18px;margin-bottom:16px;}
+.card-title{font-family:'Cinzel',serif;color:var(--gold);font-size:15px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;}
+
+/* ── TABLE ── */
+.tbl-wrap{background:var(--sf);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;overflow-x:auto;margin-bottom:16px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead tr{background:var(--sf2);}
+th{padding:11px 14px;text-align:left;color:var(--mut);font-weight:600;font-size:11px;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--bdr);white-space:nowrap;}
+td{padding:11px 14px;border-bottom:1px solid #1c2a3a44;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#c9a84c05;}
+
+/* ── BADGE ── */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.3px;}
+
+/* ── BUTTONS ── */
+.btn{cursor:pointer;font-family:'Barlow',sans-serif;font-weight:600;font-size:14px;padding:10px 18px;border-radius:9px;transition:all .18s;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;line-height:1.2;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#07090f;}
+.btn-gold:hover{opacity:.88;}
+.btn-outline{background:transparent;border:1.5px solid var(--bdr);color:var(--mut2);}
+.btn-outline:hover{border-color:var(--gdim);color:var(--gold);}
+.btn-green{background:var(--grn);color:#fff;}
+.btn-orange{background:var(--org);color:#fff;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-blue{background:var(--blu);color:#fff;}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-full{width:100%;}
+
+/* ── FORMS ── */
+.fg{margin-bottom:14px;}
+label{display:block;font-size:11px;color:var(--mut);letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px;}
+input,select,textarea{background:#0a0e18;border:1.5px solid var(--bdr);color:var(--txt);padding:10px 13px;border-radius:9px;width:100%;font-family:'Barlow',sans-serif;font-size:14px;outline:none;transition:border .2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--gdim);}
+select option{background:#0d1117;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── MODAL ── */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(3px);}
+@media(min-width:600px){.modal-ov{align-items:center;padding:16px;}}
+.modal-box{background:var(--sf);border:1px solid var(--bdr);border-radius:20px 20px 0 0;padding:22px 18px;width:100%;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease;}
+@media(min-width:600px){.modal-box{border-radius:16px;max-width:540px;max-height:90vh;}}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.modal-ttl{font-family:'Cinzel',serif;color:var(--gold);font-size:17px;}
+.modal-cls{background:none;border:none;color:var(--mut);font-size:22px;cursor:pointer;padding:2px 6px;border-radius:6px;}
+.modal-cls:hover{color:var(--txt);background:var(--bdr);}
+.modal-foot{display:flex;gap:10px;margin-top:18px;}
+
+/* ── INFO ROW ── */
+.ir{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--bdr);}
+.ir:last-child{border-bottom:none;}
+.ik{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;}
+.iv{font-weight:600;font-size:13px;text-align:right;max-width:60%;}
+
+/* ── DUE CARD ── */
+.scard{background:var(--sf);border:1px solid var(--bdr);border-radius:12px;padding:16px;margin-bottom:12px;}
+.scard.due{border-color:#ea580c44;}
+
+/* ── PILLS ── */
+.pills{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px;}
+.pill{padding:5px 13px;border-radius:20px;border:1px solid var(--bdr);background:transparent;color:var(--mut);font-family:'Barlow',sans-serif;font-size:12px;cursor:pointer;transition:all .18s;}
+.pill.active,.pill:hover{border-color:var(--gold);color:var(--gold);background:#c9a84c11;}
+
+/* ── SEARCH ── */
+.search-wrap{margin-bottom:16px;}
+
+/* ── ENTERED BY TAG ── */
+.by-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--mut2);background:var(--sf2);border:1px solid var(--bdr);border-radius:10px;padding:2px 8px;}
+.by-tag span{color:var(--gold);}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:20px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:calc(100vw - 32px);}
+.tm{background:var(--sf2);border:1px solid var(--bdr);border-radius:10px;padding:11px 16px;font-size:13px;color:var(--txt);box-shadow:0 8px 24px #0007;animation:tin .3s ease;min-width:200px;}
+.tm.ok{border-color:#16a34a44;background:#0a1f12;}
+.tm.err{border-color:#dc262644;background:#1e0a0a;}
+@keyframes tin{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:36px 20px;color:var(--mut);}
+.empty .ei{font-size:40px;margin-bottom:10px;}
+
+/* ── REPORT PAGE ── */
+.report-section{background:var(--sf);border:1px solid var(--bdr);border-radius:12px;padding:18px;margin-bottom:16px;}
+.report-section h3{font-family:'Cinzel',serif;color:var(--gold);font-size:15px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bdr);}
+.export-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;padding:14px;background:var(--sf);border:1px solid var(--bdr);border-radius:12px;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ LOGIN SCREEN ══════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🎯</div>
+    <div class="login-title">LAKSHYA</div>
+    <div style="font-family:'Cinzel',serif;color:var(--mut);font-size:11px;letter-spacing:2px;margin-bottom:4px">DEFENSE ACADEMY</div>
+    <div class="login-sub">Ranchi, Jharkhand</div>
+    <div class="user-chips">
+      <button class="uchip active" onclick="selectUser('admin')">👑 Admin</button>
+      <button class="uchip" onclick="selectUser('staff')">👤 Staff</button>
+    </div>
+    <div class="fg"><label>Username</label><input id="l-user" placeholder="Username daalen" autocomplete="off"/></div>
+    <div class="fg"><label>Password</label><input id="l-pass" type="password" placeholder="Password daalen" onkeydown="if(event.key==='Enter') doLogin()"/></div>
+    <div class="login-err" id="l-err"></div>
+    <button class="btn btn-gold btn-full" style="margin-top:8px" onclick="doLogin()">🔐 Login Karein</button>
+    <div style="margin-top:16px;font-size:12px;color:var(--mut);line-height:1.7">
+      Password bhool gaye? Institute admin se sampark karein.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ APP ══════════════════ -->
+<div id="app" style="display:none">
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <button id="menu-btn" onclick="toggleSidebar()">☰</button>
+  <div class="top-title">🎯 LAKSHYA DEFENSE ACADEMY</div>
+  <div class="top-right">
+    <div class="top-user" id="top-user-badge"></div>
+    <div class="top-date" id="top-date"></div>
+    <button class="top-logout" onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-ico">🎯</div>
+    <div><div class="sb-t1">LAKSHYA</div><div class="sb-t2">DEFENSE ACADEMY</div></div>
+  </div>
+  <nav id="main-nav">
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">🏠</span> Dashboard</div>
+    <div class="nav-item" onclick="showPage('admissions')"><span class="nav-icon">📋</span> Admissions</div>
+    <div class="nav-item" onclick="showPage('fees')"><span class="nav-icon">💵</span> Fee Collection</div>
+    <div class="nav-item" onclick="showPage('due')"><span class="nav-icon">⚠️</span> Due Fee</div>
+    <div class="nav-item" onclick="showPage('expenses')"><span class="nav-icon">📤</span> Expenditure</div>
+    <div class="nav-item" onclick="showPage('history')"><span class="nav-icon">📜</span> Fee History</div>
+    <div class="nav-item" onclick="showPage('reports')"><span class="nav-icon">📊</span> Reports & Export</div>
+    <div class="nav-item admin-only" onclick="showPage('activitylog')" style="display:none"><span class="nav-icon">🔍</span> Activity Log</div>
+  </nav>
+</div>
+
+<!-- MAIN -->
+<div id="main"><div id="content"></div></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// USERS & AUTH
+// ══════════════════════════════════════════════════════════════════
+var USERS = {
+  admin: { pass:'admin123', role:'admin', display:'Admin (Sunil Kumar)' },
+  staff: { pass:'staff123', role:'staff', display:'Staff (Staff)' }
+};
+var currentUser = null;
+var selectedLoginUser = 'admin';
+
+function selectUser(u){
+  selectedLoginUser=u;
+  document.querySelectorAll('.uchip').forEach(function(c,i){ c.classList.toggle('active',i===(u==='admin'?0:1)); });
+  document.getElementById('l-user').value=u;
+  document.getElementById('l-pass').value='';
+  document.getElementById('l-err').textContent='';
+}
+
+function doLogin(){
+  var uname=document.getElementById('l-user').value.trim().toLowerCase();
+  var pass=document.getElementById('l-pass').value;
+  var u=USERS[uname];
+  if(!u||u.pass!==pass){ document.getElementById('l-err').textContent='❌ Username ya Password galat hai!'; return; }
+  currentUser={username:uname, role:u.role, display:u.display};
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('top-user-badge').textContent='👤 '+u.display;
+  // Show admin-only nav items
+  document.querySelectorAll('.admin-only').forEach(function(el){ el.style.display=u.role==='admin'?'flex':'none'; });
+  logActivity('LOGIN','Logged in successfully');
+  showPage('dashboard');
+}
+
+function doLogout(){
+  logActivity('LOGOUT','Logged out');
+  currentUser=null;
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('l-pass').value='';
+  document.getElementById('l-err').textContent='';
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// SUPABASE CONFIG — Change these values with your project details
+// ══════════════════════════════════════════════════════════════════
+var SUPABASE_URL = 'https://desdzvkpgpderoadhteh.supabase.co';   // e.g. https://xxxx.supabase.co
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlc2R6dmtwZ3BkZXJvYWRodGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNDc2ODQsImV4cCI6MjA5ODYyMzY4NH0.MleUBY7tL2qZbd-AV2g4MfnOUaWNPVxO_2_gNI8f0Lg';   // Your anon/public key
+var supabaseReady = false;
+
+function initSupabase(){
+  if(!SUPABASE_URL || !SUPABASE_KEY){ supabaseReady=false; return; }
+  // Supabase JS loaded from CDN in <head>
+  try{
+    window._sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    supabaseReady = true;
+    syncFromSupabase();
+    console.log('Supabase connected!');
+  } catch(e){ supabaseReady=false; console.warn('Supabase init failed:',e); }
+}
+
+// Map JS student object → DB columns
+function studentToDb(s){
+  return {
+    id:s.id, student_name:s.name, father_name:s.father||'', phone:s.phone||'',
+    aadhar:s.aadhar||'', dob:s.dob||'', course:s.course||'', joining_date:s.joiningDate||'',
+    mfee:s.mfee||0, afee:s.afee||0, address:s.address||'', status:s.status||'active',
+    entered_by:s.enteredBy||'', entered_at:s.enteredAt||'',
+    status_changed_by:s.statusChangedBy||'', status_changed_at:s.statusChangedAt||''
+  };
+}
+// Map DB row → JS student object
+function dbToStudent(r){
+  return {
+    id:r.id, name:r.student_name, father:r.father_name, phone:r.phone,
+    aadhar:r.aadhar, dob:r.dob, course:r.course, joiningDate:r.joining_date,
+    mfee:r.mfee, afee:r.afee, address:r.address, status:r.status,
+    enteredBy:r.entered_by, enteredAt:r.entered_at,
+    statusChangedBy:r.status_changed_by, statusChangedAt:r.status_changed_at
+  };
+}
+// Map JS fee object → DB columns
+function feeToDb(f){
+  return {
+    id:f.id, sid:f.sid, sname:f.sname, fee_type:f.type, amount:f.amount,
+    fee_date:f.date, mkey:f.mkey||'', mlabel:f.mlabel||'',
+    partial:f.partial||false, fixed_fee:f.fixedFee||0,
+    entered_by:f.enteredBy||'', entered_at:f.enteredAt||''
+  };
+}
+function dbToFee(r){
+  return {
+    id:r.id, sid:r.sid, sname:r.sname, type:r.fee_type, amount:r.amount,
+    date:r.fee_date, mkey:r.mkey, mlabel:r.mlabel,
+    partial:r.partial, fixedFee:r.fixed_fee,
+    enteredBy:r.entered_by, enteredAt:r.entered_at
+  };
+}
+// Map JS expense → DB columns
+function expenseToDb(e){
+  return {
+    id:e.id, expense_date:e.date, cat:e.cat, description:e.desc,
+    amount:e.amount, entered_by:e.enteredBy||'', entered_at:e.enteredAt||''
+  };
+}
+function dbToExpense(r){
+  return { id:r.id, date:r.expense_date, cat:r.cat, desc:r.description,
+    amount:r.amount, enteredBy:r.entered_by, enteredAt:r.entered_at };
+}
+// Map JS log → DB columns
+function logToDb(l){
+  return { id:l.id, ts:l.ts, username:l.user, role:l.role, action:l.action, detail:l.detail };
+}
+function dbToLog(r){
+  return { id:r.id, ts:r.ts, user:r.username, role:r.role, action:r.action, detail:r.detail };
+}
+
+async function syncToSupabase(){
+  if(!supabaseReady || !window._sb) return;
+  try{
+    if(students.length){ await window._sb.from('students').upsert(students.map(studentToDb),{onConflict:'id'}); }
+    if(fees.length){ await window._sb.from('fees').upsert(fees.map(feeToDb),{onConflict:'id'}); }
+    if(expenses.length){ await window._sb.from('expenses').upsert(expenses.map(expenseToDb),{onConflict:'id'}); }
+    if(actLog.length){ await window._sb.from('activity_log').upsert(actLog.map(logToDb),{onConflict:'id'}); }
+  } catch(e){ console.warn('Supabase sync error:',e); }
+}
+
+async function syncFromSupabase(){
+  if(!supabaseReady || !window._sb) return;
+  try{
+    var [rs,rf,re,rl] = await Promise.all([
+      window._sb.from('students').select('*'),
+      window._sb.from('fees').select('*'),
+      window._sb.from('expenses').select('*'),
+      window._sb.from('activity_log').select('*').order('ts',{ascending:false}).limit(500)
+    ]);
+    if(rs.data && rs.data.length){ students=rs.data.map(dbToStudent); dbSet('students',students); }
+    if(rf.data && rf.data.length){ fees=rf.data.map(dbToFee); dbSet('fees',fees); }
+    if(re.data && re.data.length){ expenses=re.data.map(dbToExpense); dbSet('expenses',expenses); }
+    if(rl.data && rl.data.length){ actLog=rl.data.map(dbToLog); dbSet('actlog',actLog); }
+    console.log('Supabase data synced!');
+    if(currentUser) showPage(currentPage);
+  } catch(e){ console.warn('Supabase fetch error:',e); }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DATA LAYER
+// ══════════════════════════════════════════════════════════════════
+function dbGet(k){ try{ return JSON.parse(localStorage.getItem('lda_'+k)||'null'); }catch{ return null; } }
+function dbSet(k,v){ try{ localStorage.setItem('lda_'+k,JSON.stringify(v)); }catch{} }
+
+var students = dbGet('students') || [];
+var fees     = dbGet('fees')     || [];
+var expenses = dbGet('expenses') || [];
+var actLog   = dbGet('actlog')   || [];
+
+function save(){ dbSet('students',students); dbSet('fees',fees); dbSet('expenses',expenses); dbSet('actlog',actLog); if(supabaseReady) syncToSupabase(); }
+
+function logActivity(action, detail){
+  if(!currentUser) return;
+  actLog.unshift({id:uid(),ts:new Date().toISOString(),user:currentUser.display,role:currentUser.role,action:action,detail:detail});
+  if(actLog.length>500) actLog=actLog.slice(0,500);
+  dbSet('actlog',actLog);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════
+var MNS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var COURSES=['Home Guard','Agniveer','Air Force','SSC GD','All Forces','Jharkhand Police','Other'];
+var ECATS=['Salary','Rent','Electricity','Water','Stationery','Books','Maintenance','Equipment','Advertising','Miscellaneous'];
+
+function today(){ return new Date().toISOString().split('T')[0]; }
+function now(){ return new Date().toISOString(); }
+function fmtM(n){ return '₹'+Number(n||0).toLocaleString('en-IN'); }
+function fmtD(d){ if(!d) return '—'; var p=d.split('T')[0].split('-'); return p[2]+' '+MNS[+p[1]-1]+' '+p[0]; }
+function fmtDT(ts){ if(!ts) return '—'; var d=new Date(ts); return fmtD(ts)+' '+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); }
+function mkLabel(key){ var p=key.split('-'); return MNS[+p[1]-1]+' '+p[0]; }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function byTag(user){ return '<span class="by-tag">✏️ <span>'+user+'</span></span>'; }
+function canEdit(){ return currentUser && (currentUser.role==='admin' || currentUser.role==='staff'); }
+function isAdmin(){ return currentUser && currentUser.role==='admin'; }
+
+// Returns all fee entries for a student-month (could be partial payments)
+function getMonthPayments(sid, mkey){
+  return fees.filter(function(f){ return f.sid===sid && f.type==='monthly' && f.mkey===mkey; });
+}
+
+// Total paid for a specific month
+function getMonthPaidAmt(sid, mkey){
+  return getMonthPayments(sid,mkey).reduce(function(s,f){ return s+f.amount; },0);
+}
+
+// Is month fully paid?
+function isMonthFullyPaid(st, mkey){
+  return getMonthPaidAmt(st.id, mkey) >= st.mfee;
+}
+
+// All month keys that have at least one payment
+function getPaidKeys(sid){
+  var keys=[];
+  fees.filter(function(f){ return f.sid===sid&&f.type==='monthly'; }).forEach(function(f){
+    if(keys.indexOf(f.mkey)===-1) keys.push(f.mkey);
+  });
+  return keys;
+}
+
+// Months that are fully paid
+function getFullyPaidKeys(st){
+  return getPaidKeys(st.id).filter(function(k){ return isMonthFullyPaid(st,k); });
+}
+
+// Unpaid or partially paid months up to today
+function getUnpaid(st){
+  var fullyPaid=getFullyPaidKeys(st);
+  var join=new Date(st.joiningDate);
+  var now2=new Date(); now2.setHours(23,59,59);
+  var due=[];
+  for(var i=0;i<36;i++){
+    var d=new Date(join.getFullYear(),join.getMonth()+i,join.getDate());
+    if(d>now2) break;
+    var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    if(fullyPaid.indexOf(key)===-1){
+      var paidAmt=getMonthPaidAmt(st.id,key);
+      var dueAmt2=st.mfee-paidAmt;
+      due.push({key:key,label:mkLabel(key),paidAmt:paidAmt,dueAmt:dueAmt2,partial:paidAmt>0&&paidAmt<st.mfee});
+    }
+  }
+  return due;
+}
+
+// Total due amount considering partial payments
+function getTotalDueAmt(st){
+  return getUnpaid(st).reduce(function(s,u){ return s+u.dueAmt; },0);
+}
+
+function getNextDue(st){
+  // Returns the 1st of next unpaid upcoming month (today or future)
+  var fullyPaid=getFullyPaidKeys(st);
+  var join=new Date(st.joiningDate);
+  var todayD=new Date(); todayD.setHours(0,0,0,0);
+  for(var i=0;i<48;i++){
+    var d=new Date(join.getFullYear(),join.getMonth()+i,1);
+    var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    // Only return a future/current month that is unpaid
+    if(d>=todayD && fullyPaid.indexOf(key)===-1) return d.toISOString().split('T')[0];
+  }
+  return null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════════════════════════════
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+
+var currentPage='dashboard';
+var expFilterCat='All';
+var histFilter='all';
+
+function showPage(p){
+  currentPage=p; closeSidebar();
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  var idx={dashboard:0,admissions:1,fees:2,due:3,expenses:4,history:5,reports:6,activitylog:7}[p];
+  var items=document.querySelectorAll('.nav-item'); if(items[idx]) items[idx].classList.add('active');
+  document.getElementById('content').innerHTML='';
+  var pages={dashboard:renderDashboard,admissions:renderAdmissions,fees:renderFees,due:renderDue,expenses:renderExpenses,history:renderHistory,reports:renderReports,activitylog:renderActivityLog};
+  if(pages[p]) pages[p]();
+  window.scrollTo(0,0);
+}
+
+function openModal(title,body,foot){
+  var ov=document.createElement('div');
+  ov.className='modal-ov'; ov.id='mlov';
+  ov.innerHTML='<div class="modal-box"><div class="modal-hdr"><div class="modal-ttl">'+title+'</div><button class="modal-cls" onclick="closeModal()">✕</button></div><div id="mlbody">'+body+'</div>'+(foot?'<div class="modal-foot">'+foot+'</div>':'')+'</div>';
+  ov.addEventListener('click',function(e){ if(e.target===ov) closeModal(); });
+  document.body.appendChild(ov);
+}
+function closeModal(){ var el=document.getElementById('mlov'); if(el) el.remove(); }
+
+function toast(msg,type){ type=type||'ok'; var el=document.createElement('div'); el.className='tm '+type; el.textContent=(type==='ok'?'✅ ':'❌ ')+msg; document.getElementById('toast').appendChild(el); setTimeout(function(){ el.remove(); },3500); }
+
+function ir(k,v){ return '<div class="ir"><div class="ik">'+k+'</div><div class="iv">'+v+'</div></div>'; }
+function sc(icon,lbl,val,color,ibg,cbdr){ return '<div class="stat-card" style="border-color:'+cbdr+'"><div class="stat-icon" style="background:'+ibg+'">'+icon+'</div><div class="stat-lbl">'+lbl+'</div><div class="stat-val" style="color:'+color+'">'+val+'</div></div>'; }
+
+// ══════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════════════
+function renderDashboard(){
+  var totalInc=fees.reduce(function(s,f){ return s+f.amount; },0);
+  var totalExp=expenses.reduce(function(s,e){ return s+e.amount; },0);
+  var active=students.filter(function(s){ return s.status==='active'; });
+  var dueAmt=active.reduce(function(s,st){ return s+getTotalDueAmt(st); },0);
+  var dueStudents=active.filter(function(st){ return getUnpaid(st).length>0; });
+  var recent=[].concat(
+    fees.map(function(f){ return {date:f.date,desc:(f.type==='admission'?'Admission — ':'Monthly — ')+f.sname+(f.mlabel?' ('+f.mlabel+')':''),amount:f.amount,dir:1,by:f.enteredBy||'—'}; }),
+    expenses.map(function(e){ return {date:e.date,desc:e.cat+': '+e.desc,amount:e.amount,dir:-1,by:e.enteredBy||'—'}; })
+  ).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,8);
+
+  document.getElementById('content').innerHTML=
+  '<div class="ph"><div class="ph-title">Dashboard</div><div class="ph-sub">Lakshya Defense Academy — Ranchi &nbsp;|&nbsp; Logged in: <b style="color:var(--gold)">'+currentUser.display+'</b></div></div>'+
+  '<div class="stat-grid">'+
+  sc('👥','Total Students',students.length,'var(--blu2)','#1d4ed822','#1d4ed833')+
+  sc('✅','Active',active.length,'var(--grn2)','#16a34a22','#16a34a33')+
+  sc('💰','Total Income',fmtM(totalInc),'var(--gold)','#c9a84c22','#c9a84c33')+
+  sc('📤','Expense',fmtM(totalExp),'var(--red2)','#dc262622','#dc262633')+
+  sc('⚖️','Balance',fmtM(totalInc-totalExp),'#a78bfa','#7c3aed22','#7c3aed33')+
+  sc('⚠️','Due Fee',fmtM(dueAmt),'var(--org2)','#ea580c22','#ea580c33')+
+  '</div>'+
+  '<div style="display:grid;grid-template-columns:1fr;gap:16px;">'+
+  '<div class="card"><div class="card-title">⚠️ Due Fee Students</div>'+
+  (dueStudents.length===0
+    ? '<div class="empty"><div class="ei">🎉</div><p style="color:var(--grn2)">Koi due nahi! Sab clear.</p></div>'
+    : dueStudents.map(function(st){ var up=getUnpaid(st); var tot=getTotalDueAmt(st); return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bdr);gap:8px;"><div><div style="font-weight:600;font-size:14px">'+st.name+'</div><div style="font-size:12px;color:var(--mut)">'+st.course+' • '+up.length+' month(s)'+(up.some(function(u){return u.partial;})?'<span style="color:var(--org2);margin-left:6px">⚡ Partial</span>':'')+'</div></div><div style="display:flex;align-items:center;gap:8px"><div style="color:var(--org2);font-weight:700">'+fmtM(tot)+'</div><button class="btn btn-sm" style="background:#25D36622;border:1px solid #25D36644;color:#25D366;font-size:11px" onclick="sendWA(\''+st.id+'\')">💬 WA</button></div></div>'; }).join(''))+
+  '</div>'+
+  '<div class="card"><div class="card-title">📋 Recent Transactions</div>'+
+  (recent.length===0
+    ? '<div class="empty"><div class="ei">📭</div><p>Koi transaction nahi</p></div>'
+    : recent.map(function(t){ return '<div style="padding:9px 0;border-bottom:1px solid var(--bdr)"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.desc+'</div><div style="display:flex;align-items:center;gap:8px;margin-top:3px">'+byTag(t.by)+'<span style="font-size:11px;color:var(--mut)">'+fmtD(t.date)+'</span></div></div><div style="font-weight:700;color:'+(t.dir>0?'var(--grn2)':'var(--red2)')+';flex-shrink:0">'+(t.dir>0?'+':'-')+fmtM(t.amount)+'</div></div></div>'; }).join(''))+
+  '</div></div>';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ADMISSIONS
+// ══════════════════════════════════════════════════════════════════
+function renderAdmissions(){
+  document.getElementById('content').innerHTML=
+  '<div class="ph"><div class="ph-row"><div><div class="ph-title">📋 Admissions</div><div class="ph-sub">'+students.length+' students registered</div></div>'+
+  '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-gold" onclick="openAdmForm()">➕ New Admission</button><button class="btn btn-blue" onclick="openBulkUpload()">📤 Bulk Upload (CSV)</button></div></div></div>'+
+  '<div id="bulk-result"></div>'+
+  '<div class="search-wrap"><input id="adm-q" placeholder="🔍 Naam ya course..." oninput="filterAdm()"/></div>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Naam</th><th>Course</th><th>Phone</th><th>Joining</th><th>Monthly</th><th>Entered By</th><th>Status</th><th>Action</th></tr></thead><tbody id="adm-tb"></tbody></table></div>';
+  filterAdm();
+}
+
+function filterAdm(){
+  var q=(document.getElementById('adm-q')||{value:''}).value.toLowerCase();
+  var list=students.filter(function(s){ return s.name.toLowerCase().indexOf(q)>-1||s.course.toLowerCase().indexOf(q)>-1; });
+  var tb=document.getElementById('adm-tb'); if(!tb) return;
+  if(!list.length){ tb.innerHTML='<tr><td colspan="9"><div class="empty"><div class="ei">🔍</div><p>Nahi mila</p></div></td></tr>'; return; }
+  tb.innerHTML=list.map(function(s,i){
+    return '<tr>'+
+      '<td style="color:var(--mut)">'+(i+1)+'</td>'+
+      '<td><div style="font-weight:600;cursor:pointer;color:var(--gold)" onclick="viewSt(\''+s.id+'\')">'+s.name+'</div>'+(s.father?'<div style="font-size:11px;color:var(--mut)">'+s.father+'</div>':'')+'</td>'+
+      '<td><span class="badge" style="background:#1d4ed822;color:var(--blu2)">'+s.course+'</span></td>'+
+      '<td>'+s.phone+'</td>'+
+      '<td style="white-space:nowrap">'+fmtD(s.joiningDate)+'</td>'+
+      '<td style="color:var(--gold);font-weight:600">'+fmtM(s.mfee)+'</td>'+
+      '<td>'+byTag(s.enteredBy||'—')+'</td>'+
+      '<td><span class="badge" style="background:'+(s.status==='active'?'#16a34a22':'#dc262622')+';color:'+(s.status==='active'?'var(--grn2)':'var(--red2)')+'">'+s.status+'</span></td>'+
+      '<td><button class="btn btn-outline btn-sm" onclick="toggleSt(\''+s.id+'\')">'+(s.status==='active'?'Deactivate':'Activate')+'</button></td>'+
+      '</tr>';
+  }).join('');
+}
+
+function openAdmForm(){
+  openModal('New Student Admission',
+  '<div class="form-row"><div class="fg"><label>Student Naam *</label><input id="fn" placeholder="Full Name"/></div><div class="fg"><label>Father Ka Naam</label><input id="ff" placeholder="Father Name"/></div></div>'+
+  '<div class="form-row"><div class="fg"><label>Phone *</label><input id="fp" placeholder="Mobile Number" type="tel"/></div><div class="fg"><label>Aadhar Number</label><input id="fe" placeholder="12-digit Aadhar No." type="text" maxlength="12" pattern="[0-9]{12}"/></div></div>'+
+  '<div class="form-row"><div class="fg"><label>Date of Birth</label><input id="fd" type="date"/></div><div class="fg"><label>Course *</label><select id="fc">'+COURSES.map(function(c){ return '<option>'+c+'</option>'; }).join('')+'</select></div></div>'+
+  '<div class="form-row"><div class="fg"><label>Joining Date *</label><input id="fj" type="date" value="'+today()+'"/></div><div class="fg"><label>Status</label><select id="fs"><option value="active">Active</option><option value="inactive">Inactive</option></select></div></div>'+
+  '<div class="form-row"><div class="fg"><label>Monthly Fee (₹) *</label><input id="fm" type="number" value="1000"/></div><div class="fg"><label>Admission Fee (₹)</label><input id="fa" type="number" value="5000"/></div></div>'+
+  '<div class="fg"><label>Address</label><textarea id="fad" rows="2" placeholder="Poora address..."></textarea></div>'+
+  '<div style="background:var(--sf2);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--mut)">✏️ Entry by: <b style="color:var(--gold)">'+currentUser.display+'</b></div>',
+  '<button class="btn btn-gold" style="flex:1" onclick="submitAdm()">✅ Register</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
+  );
+}
+
+function submitAdm(){
+  var name=document.getElementById('fn').value.trim();
+  var phone=document.getElementById('fp').value.trim();
+  var join=document.getElementById('fj').value;
+  var mfee=+document.getElementById('fm').value||0;
+  var afee=+document.getElementById('fa').value||0;
+  if(!name||!phone||!join){ toast('Naam, Phone aur Date zaroori hai!','err'); return; }
+  var id=uid();
+  var st={id:id,name:name,father:document.getElementById('ff').value.trim(),phone:phone,aadhar:document.getElementById('fe').value.trim(),dob:document.getElementById('fd').value,course:document.getElementById('fc').value,joiningDate:join,mfee:mfee,afee:afee,address:document.getElementById('fad').value.trim(),status:document.getElementById('fs').value,enteredBy:currentUser.display,enteredAt:now()};
+  students.push(st);
+  if(afee>0) fees.push({id:uid(),sid:id,sname:name,type:'admission',amount:afee,date:join,mkey:null,mlabel:null,enteredBy:currentUser.display,enteredAt:now()});
+  save();
+  logActivity('ADMISSION','New student: '+name+' ('+document.getElementById('fc').value+')');
+  closeModal(); toast(name+' ka admission ho gaya! 🎉');
+  renderAdmissions();
+}
+
+function toggleSt(id){
+  var s=students.find(function(x){ return x.id===id; }); if(!s) return;
+  s.status=s.status==='active'?'inactive':'active';
+  s.statusChangedBy=currentUser.display; s.statusChangedAt=now();
+  save(); logActivity('STATUS_CHANGE',s.name+' → '+s.status); filterAdm();
+  toast(s.name+' '+(s.status==='active'?'Active':'Inactive')+' kar diya');
+}
+
+function viewSt(id){
+  var s=students.find(function(x){ return x.id===id; }); if(!s) return;
+  var up=getUnpaid(s);
+  var paidCnt=fees.filter(function(f){ return f.sid===id&&f.type==='monthly'; }).length;
+  openModal('📋 '+s.name,
+  ir('Naam',s.name)+ir('Father',s.father||'—')+ir('Phone',s.phone)+ir('Aadhar No.',s.aadhar?'<span style="letter-spacing:2px">'+s.aadhar+'</span>':'—')+
+  ir('DOB',fmtD(s.dob))+ir('Course',s.course)+ir('Joining',fmtD(s.joiningDate))+
+  ir('Monthly Fee','<span style="color:var(--gold)">'+fmtM(s.mfee)+'</span>')+
+  ir('Admission Fee',fmtM(s.afee))+
+  ir('Status','<span class="badge" style="background:'+(s.status==='active'?'#16a34a22':'#dc262622')+';color:'+(s.status==='active'?'var(--grn2)':'var(--red2)')+'">'+s.status+'</span>')+
+  ir('Paid Months','<span style="color:var(--grn2)">'+paidCnt+'</span>')+
+  ir('Due Months','<span style="color:var(--org2)">'+up.length+'</span>')+
+  ir('Due Amount','<span style="color:var(--red2)">'+fmtM(up.length*s.mfee)+'</span>')+
+  ir('Next Due','<span style="color:var(--blu2)">'+fmtD(getNextDue(s))+'</span>')+
+  ir('Address',s.address||'—')+
+  '<div style="margin-top:14px;padding:10px;background:var(--sf2);border-radius:8px;border:1px solid var(--bdr)">'+
+  '<div style="font-size:11px;color:var(--mut);margin-bottom:4px">ENTRY DETAILS</div>'+
+  '<div style="font-size:13px">✏️ Entered by: <b style="color:var(--gold)">'+( s.enteredBy||'—')+'</b></div>'+
+  '<div style="font-size:12px;color:var(--mut);margin-top:3px">'+fmtDT(s.enteredAt)+'</div></div>',
+  '<button class="btn btn-outline btn-full" onclick="closeModal()">Close</button>');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FEE COLLECTION
+// ══════════════════════════════════════════════════════════════════
+function renderFees(){
+  var active=students.filter(function(s){ return s.status==='active'; });
+  window._feeList=active;
+  document.getElementById('content').innerHTML=
+  '<div class="ph"><div class="ph-title">💵 Fee Collection</div><div class="ph-sub">Student-wise monthly fee jama karein</div></div>'+
+  '<div class="search-wrap"><input id="fee-q" placeholder="🔍 Student search..." oninput="filterFees()"/></div>'+
+  '<div id="fee-list"></div>';
+  filterFees();
+}
+
+function filterFees(){
+  var q=((document.getElementById('fee-q')||{}).value||'').toLowerCase();
+  var list=(window._feeList||[]).filter(function(s){ return s.name.toLowerCase().indexOf(q)>-1; });
+  var el=document.getElementById('fee-list'); if(!el) return;
+  if(!list.length){ el.innerHTML='<div class="empty"><div class="ei">👥</div><p>Koi student nahi</p></div>'; return; }
+  el.innerHTML=list.map(function(st){
+    var up=getUnpaid(st);
+    var paidCnt=getFullyPaidKeys(st).length;
+    var nd=getNextDue(st);
+    var totalDue=getTotalDueAmt(st);
+    return '<div class="scard '+(up.length>0?'due':'')+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">'+
+      '<div style="flex:1;min-width:0">'+
+      '<div style="font-weight:700;font-size:16px">'+st.name+'</div>'+
+      '<div style="color:var(--mut);font-size:13px;margin-top:2px">'+st.course+' • Fixed: '+fmtM(st.mfee)+'/month</div>'+
+      '<div style="margin-top:8px;display:flex;gap:12px;font-size:12px;flex-wrap:wrap">'+
+      '<span style="color:var(--grn2)">✅ Fully Paid: '+paidCnt+'</span>'+
+      (up.length>0?'<span style="color:var(--org2)">⚠️ Due: '+fmtM(totalDue)+'</span>':'')+
+      (nd?'<span style="color:var(--blu2)">📅 Next: '+fmtD(nd)+'</span>':'')+
+      '</div>'+
+      (up.length>0?'<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">'+up.map(function(u){
+        return '<span class="badge" style="background:'+(u.partial?'#7c3aed22':'#ea580c22')+';color:'+(u.partial?'#a78bfa':'var(--org2)')+'" title="'+(u.partial?'Partial: '+fmtM(u.paidAmt)+' paid, '+fmtM(u.dueAmt)+' due':'Full month due')+'">'+u.label+(u.partial?' ⚡':'')+'</span>';
+      }).join('')+'</div><div style="margin-top:6px;font-size:11px;color:var(--mut)">⚡ = Partial payment (kuch amount paid, baaki due)</div>':'')+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">'+
+      '<button class="btn '+(up.length>0?'btn-orange':'btn-green')+'" onclick="openFeeModal(\''+st.id+'\')">'+
+      (up.length>0?'⚠️ Collect':'➕ Jama')+'</button>'+
+      (up.length>0?'<button class="btn btn-sm" style="background:#25D36622;border:1px solid #25D36644;color:#25D366" onclick="sendWA(\''+st.id+'\')">💬 WhatsApp</button>':'')+
+      '</div>'+
+      '</div></div>';
+  }).join('');
+}
+
+function openFeeModal(sid){
+  var st=students.find(function(s){ return s.id===sid; }); if(!st) return;
+  var join=new Date(st.joiningDate);
+  var opts='';
+  for(var i=0;i<36;i++){
+    var d=new Date(join.getFullYear(),join.getMonth()+i,1);
+    var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    var lbl=mkLabel(key);
+    var paidAmt=getMonthPaidAmt(st.id,key);
+    var fullyPd=isMonthFullyPaid(st,key);
+    var suffix='';
+    if(fullyPd) suffix=' ✅ (Paid)';
+    else if(paidAmt>0) suffix=' ⚡ (Partial: '+fmtM(paidAmt)+' paid)';
+    opts+='<option value="'+key+'">'+lbl+suffix+'</option>';
+  }
+  var up=getUnpaid(st);
+
+  openModal('💵 Fee — '+st.name,
+  '<div style="background:var(--sf2);border-radius:10px;padding:14px;margin-bottom:16px;text-align:center">'+
+  '<div style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Fixed Monthly Fee</div>'+
+  '<div style="font-family:\'Cinzel\',serif;font-size:28px;font-weight:700;color:var(--gold)">'+fmtM(st.mfee)+'</div></div>'+
+  (up.length>0?'<div style="margin-bottom:14px;padding:10px;background:#ea580c11;border:1px solid #ea580c33;border-radius:8px;font-size:13px;color:var(--org2)">⚠️ Total Due: <b>'+fmtM(getTotalDueAmt(st))+'</b></div>':'')+
+  '<div class="fg"><label>Month Select Karein</label><select id="fee-mkey" onchange="updateDueInfo(\''+sid+'\')">'+opts+'</select></div>'+
+  '<div id="fee-due-info" style="margin-bottom:12px;padding:10px;border-radius:8px;font-size:13px;display:none"></div>'+
+  '<div class="fg"><label>Amount Received (₹) <span style="color:var(--org2)">(Flexible — partial bhi chalega)</span></label>'+
+  '<input type="number" id="fee-amt" placeholder="Amount enter karein" oninput="checkPartial(\''+sid+'\')"/></div>'+
+  '<div id="partial-warning" style="font-size:12px;color:var(--org2);margin-bottom:10px;display:none">⚡ Yeh partial payment hai — baaki amount due mein rahega</div>'+
+  '<div id="excess-warning" style="font-size:12px;color:var(--red2);margin-bottom:10px;display:none">❌ Amount fixed fee se zyada nahi ho sakta is month ke liye</div>'+
+  '<div class="fg"><label>Payment Date</label><input type="date" id="fee-dt" value="'+today()+'"/></div>'+
+  '<div style="background:var(--sf2);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--mut)">✏️ Collected by: <b style="color:var(--gold)">'+currentUser.display+'</b></div>',
+  '<button class="btn btn-gold" style="flex:1" onclick="submitFee(\''+sid+'\')">✅ Fee Jama</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
+  );
+  // Set default month to first unpaid
+  if(up.length>0){ var sel=document.getElementById('fee-mkey'); if(sel){ sel.value=up[0].key; updateDueInfo(sid); } }
+  else { updateDueInfo(sid); }
+}
+
+function updateDueInfo(sid){
+  var st=students.find(function(s){ return s.id===sid; }); if(!st) return;
+  var sel=document.getElementById('fee-mkey'); if(!sel) return;
+  var mkey=sel.value;
+  var paidAmt=getMonthPaidAmt(st.id,mkey);
+  var remaining=st.mfee-paidAmt;
+  var infoEl=document.getElementById('fee-due-info');
+  if(!infoEl) return;
+  if(paidAmt>0 && paidAmt<st.mfee){
+    infoEl.style.display='block';
+    infoEl.style.background='#7c3aed22';
+    infoEl.style.border='1px solid #7c3aed44';
+    infoEl.style.color='#a78bfa';
+    infoEl.innerHTML='⚡ <b>Partial Payment:</b> '+fmtM(paidAmt)+' already paid &nbsp;|&nbsp; Remaining: <b>'+fmtM(remaining)+'</b>';
+    var amtEl=document.getElementById('fee-amt'); if(amtEl) amtEl.value=remaining;
+  } else if(paidAmt>=st.mfee){
+    infoEl.style.display='block';
+    infoEl.style.background='#16a34a22';
+    infoEl.style.border='1px solid #16a34a44';
+    infoEl.style.color='var(--grn2)';
+    infoEl.innerHTML='✅ Is month ka fee fully paid hai!';
+    var amtEl2=document.getElementById('fee-amt'); if(amtEl2) amtEl2.value='';
+  } else {
+    infoEl.style.display='block';
+    infoEl.style.background='var(--sf2)';
+    infoEl.style.border='1px solid var(--bdr)';
+    infoEl.style.color='var(--mut2)';
+    infoEl.innerHTML='Fixed fee: <b>'+fmtM(st.mfee)+'</b> &nbsp;|&nbsp; Abhi tak koi payment nahi';
+    var amtEl3=document.getElementById('fee-amt'); if(amtEl3) amtEl3.value=st.mfee;
+  }
+  checkPartial(sid);
+}
+
+function checkPartial(sid){
+  var st=students.find(function(s){ return s.id===sid; }); if(!st) return;
+  var sel=document.getElementById('fee-mkey'); if(!sel) return;
+  var mkey=sel.value;
+  var paidAmt=getMonthPaidAmt(st.id,mkey);
+  var remaining=st.mfee-paidAmt;
+  var amt=+document.getElementById('fee-amt').value||0;
+  var pw=document.getElementById('partial-warning');
+  var ew=document.getElementById('excess-warning');
+  if(pw) pw.style.display=(amt>0&&amt<remaining)?'block':'none';
+  if(ew) ew.style.display=(amt>remaining)?'block':'none';
+}
+
+function submitFee(sid){
+  var st=students.find(function(s){ return s.id===sid; }); if(!st) return;
+  var mkey=document.getElementById('fee-mkey').value;
+  var date=document.getElementById('fee-dt').value;
+  var amt=+document.getElementById('fee-amt').value||0;
+  if(!mkey){ toast('Month select karein!','err'); return; }
+  if(!amt||amt<=0){ toast('Amount enter karein!','err'); return; }
+  var paidSoFar=getMonthPaidAmt(st.id,mkey);
+  var remaining=st.mfee-paidSoFar;
+  if(amt>remaining){ toast('Amount '+fmtM(remaining)+' se zyada nahi ho sakta!','err'); return; }
+  var isPartial=(amt<remaining);
+  fees.push({id:uid(),sid:sid,sname:st.name,type:'monthly',amount:amt,date:date,mkey:mkey,mlabel:mkLabel(mkey),partial:isPartial,fixedFee:st.mfee,enteredBy:currentUser.display,enteredAt:now()});
+  save();
+  logActivity('FEE_COLLECT',st.name+' — '+mkLabel(mkey)+' — '+fmtM(amt)+(isPartial?' (PARTIAL)':''));
+  closeModal();
+  if(isPartial) toast(st.name+': '+fmtM(amt)+' jama, '+fmtM(remaining-amt)+' abhi bhi due ⚡','ok');
+  else toast(st.name+' ka '+mkLabel(mkey)+' fully paid! 🎉');
+  renderFees();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DUE FEE
+// ══════════════════════════════════════════════════════════════════
+function renderDue(){
+  var dueList=students.filter(function(s){ return s.status==='active'; }).map(function(st){ return Object.assign({},st,{unpaid:getUnpaid(st),totalDue:getTotalDueAmt(st)}); }).filter(function(st){ return st.unpaid.length>0; });
+  var totalDue=dueList.reduce(function(s,st){ return s+st.totalDue; },0);
+  window._dueList=dueList;
+  document.getElementById('content').innerHTML=
+  '<div class="ph"><div class="ph-title">⚠️ Due Fee Report</div><div class="ph-sub">Pending fees ki list &nbsp;|&nbsp; ⚡ = Partial Payment</div></div>'+
+  '<div class="stat-grid" style="grid-template-columns:1fr 1fr;max-width:400px">'+
+  sc('⚠️','Due Students',dueList.length,'var(--org2)','#ea580c22','#ea580c33')+
+  sc('💸','Total Due',fmtM(totalDue),'var(--red2)','#dc262622','#dc262633')+
+  '</div>'+
+  '<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">'+
+  '<div class="search-wrap" style="margin-bottom:0;flex:1"><input id="due-q" placeholder="🔍 Student search..." oninput="filterDue()"/></div>'+
+  '<button class="btn btn-sm" style="background:#25D36622;border:1px solid #25D36644;color:#25D366;white-space:nowrap" onclick="sendWAAll()">💬 Sabko WhatsApp</button>'+
+  '</div>'+
+  '<div id="due-list"></div>';
+  filterDue();
+}
+
+function filterDue(){
+  var q=((document.getElementById('due-q')||{}).value||'').toLowerCase();
+  var list=(window._dueList||[]).filter(function(st){ return st.name.toLowerCase().indexOf(q)>-1; });
+  var el=document.getElementById('due-list'); if(!el) return;
+  if(!list.length){ el.innerHTML='<div class="empty"><div class="ei">🎉</div><p style="color:var(--grn2)">Koi due nahi!</p></div>'; return; }
+  el.innerHTML=list.map(function(st){
+    var nd=getNextDue(st);
+    return '<div class="scard due">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:16px">'+st.name+'</div>'+
+      '<div style="font-size:12px;color:var(--mut)">'+st.course+' • '+st.phone+'</div>'+
+      '<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">'+
+      st.unpaid.map(function(u){
+        return '<span class="badge" style="background:'+(u.partial?'#7c3aed22':'#dc262622')+';color:'+(u.partial?'#a78bfa':'var(--red2)')+'" title="'+(u.partial?'Paid: '+fmtM(u.paidAmt)+' | Due: '+fmtM(u.dueAmt):'Due: '+fmtM(u.dueAmt))+'">'+u.label+(u.partial?' ⚡':'')+'</span>';
+      }).join('')+'</div>'+
+      // Show breakdown if partial exists
+      (st.unpaid.some(function(u){return u.partial;})?
+        '<div style="margin-top:6px;font-size:11px;color:#a78bfa">⚡ Partial payments — kuch amount already received, baaki due hai</div>':'')+
+      (nd?'<div style="margin-top:8px;font-size:12px;color:var(--blu2)">📅 Next Due: <b>'+fmtD(nd)+'</b></div>':'')+
+      '</div>'+
+      '<div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end">'+
+      '<div style="color:var(--red2);font-weight:700;font-size:18px">'+fmtM(st.totalDue)+'</div>'+
+      '<div style="font-size:11px;color:var(--mut)">Fixed: '+fmtM(st.mfee)+'/mo</div>'+
+      '<button class="btn btn-orange btn-sm" onclick="showPage(\'fees\')">Collect →</button>'+
+      '<button class="btn btn-sm" style="background:#25D36622;border:1px solid #25D36644;color:#25D366" onclick="sendWA(\''+st.id+'\')">💬 WhatsApp</button>'+
+      '</div></div></div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// EXPENSES
+// ══════════════════════════════════════════════════════════════════
+function renderExpenses(){
+  document.getElementById('content').innerHTML=
+  '<div class="ph"><div class="ph-row"><div><div class="ph-title">📤 Expenditure</div><div class="ph-sub">Institute ka kharcha</div></div>'+
+  '<button class="btn btn-gold" onclick="openExpForm()">➕ Add</button></div></div>'+
+  '<div class="pills" id="exp-pills">'+['All'].concat(ECATS).map(function(cat){ return '<button class="pill'+(expFilterCat===cat?' active':'')+'" onclick="setExpCat(\''+cat+'\')">'+cat+'</button>'; }).join('')+'</div>'+
+  '<div style="background:var(--sf);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">'+
+  '<span style="color:var(--mut);font-size:13px" id="exp-cnt"></span><span style="color:var(--red2);font-weight:700;font-size:17px" id="exp-tot"></span></div>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Entered By</th></tr></thead><tbody id="exp-tb"></tbody></table></div>';
+  renderExpTb();
+}
+
+function setExpCat(cat){ expFilterCat=cat; document.querySelectorAll('#exp-pills .pill').forEach(function(p,i){ p.classList.toggle('active',['All'].concat(ECATS)[i]===cat); }); renderExpTb(); }
+
+function renderExpTb(){
+  var list=expenses.filter(function(e){ return expFilterCat==='All'||e.cat===expFilterCat; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var tot=list.reduce(function(s,e){ return s+e.amount; },0);
+  var cnt=document.getElementById('exp-cnt'); if(cnt) cnt.textContent=list.length+' entries';
+  var totEl=document.getElementById('exp-tot'); if(totEl) totEl.textContent=fmtM(tot);
+  var tb=document.getElementById('exp-tb'); if(!tb) return;
+  if(!list.length){ tb.innerHTML='<tr><td colspan="5"><div class="empty"><div class="ei">📭</div><p>Koi expense nahi</p></div></td></tr>'; return; }
+  tb.innerHTML=list.map(function(e){
+    return '<tr><td style="white-space:nowrap">'+fmtD(e.date)+'</td>'+
+      '<td><span class="badge" style="background:#7c3aed22;color:#a78bfa">'+e.cat+'</span></td>'+
+      '<td>'+e.desc+'</td>'+
+      '<td style="color:var(--red2);font-weight:700">'+fmtM(e.amount)+'</td>'+
+      '<td>'+byTag(e.enteredBy||'—')+'</td></tr>';
+  }).join('');
+}
+
+function openExpForm(){
+  openModal('Expense Add Karein',
+  '<div class="fg"><label>Date</label><input type="date" id="ed" value="'+today()+'"/></div>'+
+  '<div class="fg"><label>Category</label><select id="ec">'+ECATS.map(function(c){ return '<option>'+c+'</option>'; }).join('')+'</select></div>'+
+  '<div class="fg"><label>Description *</label><input id="edesc" placeholder="Kharche ka vivran..."/></div>'+
+  '<div class="fg"><label>Amount (₹) *</label><input type="number" id="eamt" placeholder="0"/></div>'+
+  '<div style="background:var(--sf2);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--mut)">✏️ Entry by: <b style="color:var(--gold)">'+currentUser.display+'</b></div>',
+  '<button class="btn btn-gold" style="flex:1" onclick="submitExp()">✅ Save</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
+  );
+}
+
+function submitExp(){
+  var desc=document.getElementById('edesc').value.trim();
+  var amt=+document.getElementById('eamt').value||0;
+  if(!desc||!amt){ toast('Description aur Amount zaroori hai!','err'); return; }
+  var entry={id:uid(),date:document.getElementById('ed').value,cat:document.getElementById('ec').value,desc:desc,amount:amt,enteredBy:currentUser.display,enteredAt:now()};
+  expenses.push(entry);
+  save();
+  logActivity('EXPENSE',''+entry.cat+': '+entry.desc+' — '+fmtM(amt));
+  closeModal(); toast('Expense save ho gaya!');
+  renderExpenses();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FEE HISTORY
+// ══════════════════════════════════════════════════════════════════
+function renderHistory(){
+  document.getElementById('content').innerHTML=
+  '<div class="ph"><div class="ph-row"><div><div class="ph-title">📜 Fee History</div><div class="ph-sub">Saari fee transactions</div></div>'+
+  '<button class="btn btn-green btn-sm" onclick="exportFeeHistoryCSV()">⬇️ Export CSV</button></div></div>'+
+  '<div class="pills">'+[['all','Sabhi'],['admission','Admission'],['monthly','Monthly']].map(function(v){ return '<button class="pill'+(histFilter===v[0]?' active':'')+'" onclick="setHistFilter(\''+v[0]+'\')">'+v[1]+'</button>'; }).join('')+'</div>'+
+  '<div style="background:var(--sf);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between">'+
+  '<span style="color:var(--mut);font-size:13px" id="h-cnt"></span><span style="color:var(--grn2);font-weight:700;font-size:17px" id="h-tot"></span></div>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Student</th><th>Type</th><th>Month</th><th>Amount</th><th>Collected By</th></tr></thead><tbody id="h-tb"></tbody></table></div>';
+  renderHistTb();
+}
+
+function setHistFilter(v){ histFilter=v; document.querySelectorAll('.pills .pill').forEach(function(p,i){ p.classList.toggle('active',[['all'],['admission'],['monthly']][i][0]===v); }); renderHistTb(); }
+
+function renderHistTb(){
+  var list=fees.filter(function(f){ return histFilter==='all'||f.type===histFilter; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var tot=list.reduce(function(s,f){ return s+f.amount; },0);
+  var cnt=document.getElementById('h-cnt'); if(cnt) cnt.textContent=list.length+' records';
+  var totEl=document.getElementById('h-tot'); if(totEl) totEl.textContent=fmtM(tot);
+  var tb=document.getElementById('h-tb'); if(!tb) return;
+  if(!list.length){ tb.innerHTML='<tr><td colspan="6"><div class="empty"><div class="ei">📭</div><p>Koi records nahi</p></div></td></tr>'; return; }
+  tb.innerHTML=list.map(function(f){
+    return '<tr><td style="white-space:nowrap">'+fmtD(f.date)+'</td>'+
+      '<td style="font-weight:600">'+f.sname+'</td>'+
+      '<td><span class="badge" style="background:'+(f.type==='admission'?'#7c3aed22':'#1d4ed822')+';color:'+(f.type==='admission'?'#a78bfa':'var(--blu2)')+'">'+( f.type==='admission'?'Admission':'Monthly')+'</span>'+
+      (f.partial?'&nbsp;<span class="badge" style="background:#7c3aed22;color:#a78bfa">⚡ Partial</span>':'')+
+      '</td>'+
+      '<td style="color:var(--mut)">'+(f.mlabel||'—')+'</td>'+
+      '<td style="color:var(--grn2);font-weight:700">'+fmtM(f.amount)+(f.partial&&f.fixedFee?'<div style="font-size:10px;color:var(--mut)">Fixed: '+fmtM(f.fixedFee)+'</div>':'')+'</td>'+
+      '<td>'+byTag(f.enteredBy||'—')+'</td></tr>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// REPORTS & EXCEL EXPORT
+// ══════════════════════════════════════════════════════════════════
+function renderReports(){
+  var totalInc=fees.reduce(function(s,f){ return s+f.amount; },0);
+  var totalExp=expenses.reduce(function(s,e){ return s+e.amount; },0);
+  var active=students.filter(function(s){ return s.status==='active'; });
+  var dueAmt=active.reduce(function(s,st){ return s+getTotalDueAmt(st); },0);
+
+  document.getElementById('content').innerHTML=
+  '<div class="ph"><div class="ph-title">📊 Reports & Export</div><div class="ph-sub">Sabhi data ko Excel/CSV mein export karein</div></div>'+
+
+  '<div class="export-bar">'+
+  '<div style="flex:1;min-width:0"><div style="font-family:\'Cinzel\',serif;color:var(--gold);font-size:14px;margin-bottom:4px">📥 Excel Export</div>'+
+  '<div style="font-size:12px;color:var(--mut)">Neeche se koi bhi report download karein — CSV format (Excel mein khulta hai)</div></div>'+
+  '</div>'+
+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">'+
+  rCard('👥 Students List','Sabhi registered students ka data','btn-blue','exportStudents()')+
+  rCard('💵 Fee Collections','Saari collected fees ka record','btn-green','exportFees()')+
+  rCard('⚠️ Due Fee List','Abhi tak pending fees','btn-orange','exportDueFees()')+
+  rCard('📤 Expenditure','Institute ka poora kharcha','btn-red','exportExpenses()')+
+  rCard('📊 Complete Report','Sab kuch ek CSV mein','btn-gold','exportAll()')+
+  (isAdmin() ? rCard('🔍 Activity Log','Kisne kya kiya — poori history','btn-outline','exportActivityLog()') : '')+
+  '</div>'+
+
+  '<div class="report-section"><h3>📈 Summary Report</h3>'+
+  ir('Total Students Registered',students.length)+
+  ir('Active Students',active.length)+
+  ir('Total Fee Collected',fmtM(totalInc))+
+  ir('Total Expenditure',fmtM(totalExp))+
+  ir('Net Balance','<b style="color:'+(totalInc-totalExp>=0?'var(--grn2)':'var(--red2)')+'">'+fmtM(totalInc-totalExp)+'</b>')+
+  ir('Total Due Fee','<b style="color:var(--org2)">'+fmtM(dueAmt)+'</b>')+
+  ir('Admission Fee Total',fmtM(fees.filter(function(f){ return f.type==='admission'; }).reduce(function(s,f){ return s+f.amount; },0)))+
+  ir('Monthly Fee Total',fmtM(fees.filter(function(f){ return f.type==='monthly'; }).reduce(function(s,f){ return s+f.amount; },0)))+
+  '</div>';
+}
+
+function rCard(title,sub,btnCls,onclick){
+  return '<div style="background:var(--sf);border:1px solid var(--bdr);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;">'+
+    '<div><div style="font-weight:600;font-size:14px;margin-bottom:3px">'+title+'</div><div style="font-size:12px;color:var(--mut)">'+sub+'</div></div>'+
+    '<button class="btn '+btnCls+' btn-sm" onclick="'+onclick+'">⬇️ Download CSV</button></div>';
+}
+
+function csvDownload(filename, rows){
+  var csv=rows.map(function(r){ return r.map(function(c){ var s=String(c===null||c===undefined?'':c); return s.indexOf(',')>-1||s.indexOf('"')>-1||s.indexOf('\n')>-1?'"'+s.replace(/"/g,'""')+'"':s; }).join(','); }).join('\n');
+  var BOM='\uFEFF';
+  var blob=new Blob([BOM+csv],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download=filename; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1000);
+  toast(filename+' download ho raha hai!');
+  logActivity('EXPORT','Exported: '+filename);
+}
+
+function exportStudents(){
+  var rows=[['#','Student Naam','Father Naam','Phone','Aadhar No.','DOB','Course','Joining Date','Monthly Fee','Admission Fee','Status','Address','Entered By','Entry Date']];
+  students.forEach(function(s,i){
+    rows.push([i+1,s.name,s.father||'',s.phone,s.aadhar||'',s.dob||'',s.course,s.joiningDate,s.mfee,s.afee||0,s.status,s.address||'',s.enteredBy||'',fmtD(s.enteredAt)]);
+  });
+  csvDownload('Lakshya_Students_'+today()+'.csv',rows);
+}
+
+function exportFees(){
+  var rows=[['#','Date','Student Naam','Type','Month','Amount Received','Fixed Fee','Payment Type','Collected By','Entry Time']];
+  var list=[].concat(fees).sort(function(a,b){ return b.date.localeCompare(a.date); });
+  list.forEach(function(f,i){
+    rows.push([i+1,f.date,f.sname,f.type==='admission'?'Admission':'Monthly',f.mlabel||'—',f.amount,f.fixedFee||'',f.partial?'Partial':'Full',f.enteredBy||'',fmtDT(f.enteredAt)]);
+  });
+  csvDownload('Lakshya_FeeCollections_'+today()+'.csv',rows);
+}
+
+function exportDueFees(){
+  var rows=[['#','Student Naam','Course','Phone','Month','Month Type','Fixed Fee','Paid Amt','Due Amt','Next Due Date','Joining Date']];
+  var i=0;
+  students.filter(function(s){ return s.status==='active'; }).forEach(function(st){
+    var up=getUnpaid(st);
+    if(up.length>0){
+      up.forEach(function(u){
+        i++;
+        rows.push([i,st.name,st.course,st.phone,u.label,u.partial?'Partial':'Unpaid',st.mfee,u.paidAmt,u.dueAmt,getNextDue(st)||'',st.joiningDate]);
+      });
+    }
+  });
+  csvDownload('Lakshya_DueFees_'+today()+'.csv',rows);
+}
+
+function exportExpenses(){
+  var rows=[['#','Date','Category','Description','Amount','Entered By','Entry Time']];
+  var list=[].concat(expenses).sort(function(a,b){ return b.date.localeCompare(a.date); });
+  list.forEach(function(e,i){
+    rows.push([i+1,e.date,e.cat,e.desc,e.amount,e.enteredBy||'',fmtDT(e.enteredAt)]);
+  });
+  csvDownload('Lakshya_Expenditure_'+today()+'.csv',rows);
+}
+
+function exportFeeHistoryCSV(){ exportFees(); }
+
+function exportAll(){
+  var rows=[['SECTION','#','Date','Name/Desc','Detail','Amount','Entered By']];
+  rows.push(['--- STUDENTS ---','','','','','','']);
+  students.forEach(function(s,i){ rows.push(['Student',i+1,s.joiningDate,s.name,s.course+' | '+s.phone,s.mfee,s.enteredBy||'']); });
+  rows.push(['','','','','','','']);
+  rows.push(['--- FEE COLLECTIONS ---','','','','','','']);
+  fees.forEach(function(f,i){ rows.push(['Fee',i+1,f.date,f.sname,(f.type==='admission'?'Admission':f.mlabel||'Monthly'),f.amount,f.enteredBy||'']); });
+  rows.push(['','','','','','','']);
+  rows.push(['--- EXPENDITURE ---','','','','','','']);
+  expenses.forEach(function(e,i){ rows.push(['Expense',i+1,e.date,e.desc,e.cat,e.amount,e.enteredBy||'']); });
+  rows.push(['','','','','','','']);
+  rows.push(['--- DUE FEE ---','','','','','','']);
+  students.filter(function(s){ return s.status==='active'&&getUnpaid(s).length>0; }).forEach(function(st,i){
+    var up=getUnpaid(st);
+    rows.push(['Due',i+1,'',st.name,up.length+' months due',up.length*st.mfee,'']);
+  });
+  csvDownload('Lakshya_CompleteReport_'+today()+'.csv',rows);
+}
+
+function exportActivityLog(){
+  if(!isAdmin()){ toast('Sirf Admin Activity Log export kar sakta hai!','err'); return; }
+  var rows=[['#','Date & Time','User','Role','Action','Details']];
+  actLog.forEach(function(l,i){ rows.push([i+1,fmtDT(l.ts),l.user,l.role,l.action,l.detail]); });
+  csvDownload('Lakshya_ActivityLog_'+today()+'.csv',rows);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ACTIVITY LOG (Admin only)
+// ══════════════════════════════════════════════════════════════════
+function renderActivityLog(){
+  if(!isAdmin()){ document.getElementById('content').innerHTML='<div class="empty"><div class="ei">🔒</div><p>Sirf Admin dekh sakta hai</p></div>'; return; }
+  document.getElementById('content').innerHTML=
+  '<div class="ph"><div class="ph-row"><div><div class="ph-title">🔍 Activity Log</div><div class="ph-sub">Kisne kya kiya — poori history</div></div>'+
+  '<button class="btn btn-green btn-sm" onclick="exportActivityLog()">⬇️ Export</button></div></div>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Date & Time</th><th>User</th><th>Role</th><th>Action</th><th>Details</th></tr></thead><tbody id="log-tb"></tbody></table></div>';
+  var tb=document.getElementById('log-tb');
+  if(!actLog.length){ tb.innerHTML='<tr><td colspan="6"><div class="empty"><div class="ei">📭</div><p>Koi activity nahi</p></div></td></tr>'; return; }
+  tb.innerHTML=actLog.map(function(l,i){
+    var colors={LOGIN:'var(--grn2)',LOGOUT:'var(--mut2)',ADMISSION:'var(--blu2)',FEE_COLLECT:'var(--gold)',EXPENSE:'var(--red2)',STATUS_CHANGE:'var(--org2)',EXPORT:'#a78bfa'};
+    var col=colors[l.action]||'var(--txt)';
+    return '<tr><td style="color:var(--mut)">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap;font-size:12px">'+fmtDT(l.ts)+'</td>'+
+      '<td>'+byTag(l.user)+'</td>'+
+      '<td><span class="badge" style="background:'+(l.role==='admin'?'#c9a84c22':'#1d4ed822')+';color:'+(l.role==='admin'?'var(--gold)':'var(--blu2)')+'">'+l.role+'</span></td>'+
+      '<td><span class="badge" style="background:'+col+'22;color:'+col+'">'+l.action+'</span></td>'+
+      '<td style="font-size:12px;color:var(--mut2)">'+l.detail+'</td></tr>';
+  }).join('');
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// BULK UPLOAD (Admin Only)
+// ══════════════════════════════════════════════════════════════════
+function openBulkUpload(){
+  if(!isAdmin()){ toast('Sirf Admin bulk upload kar sakta hai!','err'); return; }
+  openModal('📤 Bulk Student Upload (CSV)',
+  '<div style="background:#1d4ed811;border:1px solid #1d4ed833;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--blu2)">'+
+  '<b>CSV Format (is order mein columns hone chahiye):</b><br/><br/>'+
+  '<code style="font-size:11px;color:var(--gold);background:var(--sf2);padding:6px 10px;border-radius:6px;display:block;margin-top:6px">'+
+  'Naam, Father, Phone, Aadhar, DOB (YYYY-MM-DD), Course, Joining Date (YYYY-MM-DD), Monthly Fee, Admission Fee, Address</code>'+
+  '<br/><span style="color:var(--mut);font-size:11px">First row header skip ho jaayegi. Empty rows ignore hongi.</span></div>'+
+  '<div style="margin-bottom:14px"><button class="btn btn-outline btn-sm" onclick="downloadSampleCSV()">⬇️ Sample CSV Download Karein</button></div>'+
+  '<div class="fg"><label>CSV File Select Karein</label>'+
+  '<input type="file" id="bulk-file" accept=".csv" style="padding:8px;font-size:13px" onchange="previewBulk()"/></div>'+
+  '<div id="bulk-preview" style="margin-top:10px"></div>',
+  '<button class="btn btn-gold" style="flex:1" id="bulk-submit-btn" onclick="submitBulk()" style="display:none">✅ Upload Karein</button>'+
+  '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
+  );
+}
+
+function downloadSampleCSV(){
+  var rows=[
+    ['Naam','Father Naam','Phone','Aadhar','DOB','Course','Joining Date','Monthly Fee','Admission Fee','Address'],
+    ['Rahul Kumar','Ram Kumar','9876543210','123456789012','2000-05-15','NDA','2026-01-01','1000','5000','Ranchi Jharkhand'],
+    ['Priya Singh','Suresh Singh','9812345678','987654321098','2001-08-20','CDS','2026-01-01','1000','5000','Dhanbad Jharkhand'],
+  ];
+  csvDownload('Lakshya_BulkUpload_Sample.csv',rows);
+}
+
+function previewBulk(){
+  var file=document.getElementById('bulk-file').files[0];
+  if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var text=e.target.result;
+    var lines=text.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length>0; });
+    if(lines.length<2){ document.getElementById('bulk-preview').innerHTML='<div style="color:var(--red2);font-size:13px">❌ File mein koi data nahi mila</div>'; return; }
+    // Skip header row
+    var dataLines=lines.slice(1);
+    var parsed=[]; var errors=[];
+    dataLines.forEach(function(line,idx){
+      var cols=parseCSVLine(line);
+      if(cols.length<7){ errors.push('Row '+(idx+2)+': Columns kam hain'); return; }
+      var name=(cols[0]||'').trim();
+      var phone=(cols[2]||'').trim();
+      var join=(cols[6]||'').trim();
+      if(!name||!phone||!join){ errors.push('Row '+(idx+2)+': Naam/Phone/Date missing'); return; }
+      parsed.push({
+        name:name, father:(cols[1]||'').trim(), phone:phone,
+        aadhar:(cols[3]||'').trim(), dob:(cols[4]||'').trim(),
+        course:(cols[5]||'NDA').trim(), joiningDate:join,
+        mfee:+(cols[7]||1000)||1000, afee:+(cols[8]||0)||0,
+        address:(cols[9]||'').trim()
+      });
+    });
+    window._bulkParsed=parsed;
+    var html='<div style="margin-bottom:10px;font-size:13px">'+
+      '<span style="color:var(--grn2)">✅ '+parsed.length+' students ready</span>'+
+      (errors.length>0?'&nbsp;&nbsp;<span style="color:var(--red2)">❌ '+errors.length+' errors</span>':'')+
+      '</div>';
+    if(errors.length>0) html+='<div style="background:#dc262611;border:1px solid #dc262633;border-radius:8px;padding:10px;font-size:12px;color:var(--red2);margin-bottom:10px">'+errors.join('<br/>')+'</div>';
+    if(parsed.length>0){
+      html+='<div style="font-size:12px;color:var(--mut);margin-bottom:6px">Preview (first 5):</div>';
+      html+='<div style="background:var(--sf2);border-radius:8px;padding:10px;max-height:180px;overflow-y:auto">';
+      parsed.slice(0,5).forEach(function(s,i){
+        html+='<div style="padding:6px 0;border-bottom:1px solid var(--bdr);font-size:12px">'+
+          '<b>'+(i+1)+'. '+s.name+'</b> &nbsp;|&nbsp; '+s.course+' &nbsp;|&nbsp; '+s.phone+'</div>';
+      });
+      if(parsed.length>5) html+='<div style="font-size:11px;color:var(--mut);padding:6px 0">...aur '+(parsed.length-5)+' students</div>';
+      html+='</div>';
+    }
+    document.getElementById('bulk-preview').innerHTML=html;
+    var btn=document.getElementById('bulk-submit-btn');
+    if(btn) btn.style.display=parsed.length>0?'flex':'none';
+  };
+  reader.readAsText(file);
+}
+
+function parseCSVLine(line){
+  var cols=[]; var cur=''; var inQ=false;
+  for(var i=0;i<line.length;i++){
+    var ch=line[i];
+    if(ch==='"'){ inQ=!inQ; }
+    else if(ch===','&&!inQ){ cols.push(cur); cur=''; }
+    else { cur+=ch; }
+  }
+  cols.push(cur);
+  return cols.map(function(c){ return c.replace(/^"|"$/g,'').trim(); });
+}
+
+function submitBulk(){
+  var parsed=window._bulkParsed||[];
+  if(!parsed.length){ toast('Koi data nahi mila!','err'); return; }
+  var added=0; var skipped=0;
+  parsed.forEach(function(s){
+    // Check duplicate by phone
+    if(students.find(function(ex){ return ex.phone===s.phone; })){ skipped++; return; }
+    var id=uid();
+    var st=Object.assign({},s,{id:id,status:'active',enteredBy:currentUser.display+' (Bulk)',enteredAt:now()});
+    students.push(st);
+    if(s.afee>0) fees.push({id:uid(),sid:id,sname:s.name,type:'admission',amount:s.afee,date:s.joiningDate,mkey:null,mlabel:null,enteredBy:currentUser.display+' (Bulk)',enteredAt:now()});
+    added++;
+  });
+  save();
+  logActivity('BULK_UPLOAD',added+' students added, '+skipped+' skipped (duplicate phone)');
+  closeModal();
+  toast(added+' students upload ho gaye! '+( skipped>0?skipped+' duplicate skip.':''),'ok');
+  renderAdmissions();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// WHATSAPP FOLLOW-UP
+// ══════════════════════════════════════════════════════════════════
+function sendWA(sid){
+  var st=students.find(function(s){ return s.id===sid; }); if(!st) return;
+  var up=getUnpaid(st);
+  var totalDue=getTotalDueAmt(st);
+  if(up.length===0){ toast('Is student ka koi due nahi hai!','err'); return; }
+  var months=up.map(function(u){
+    if(u.partial) return u.label+' ('+fmtM(u.paidAmt)+' paid, '+fmtM(u.dueAmt)+' baaki)';
+    return u.label;
+  }).join(', ');
+  var nd=getNextDue(st);
+  // Build upcoming due month label for "Next Due Date"
+  var ndLabel='';
+  if(nd){ var ndParts=nd.split('-'); ndLabel=MNS[+ndParts[1]-1]+' '+ndParts[0]; }
+  var msg='🙏 Namaste *'+st.name+' ji*\n\n'+
+    '🎯 *Lakshya Defense Academy, Ranchi*\n'+
+    '-----------------------------\n\n'+
+    '⚠️ *Monthly Fee Due Reminder*\n\n'+
+    '👤 Student: *'+st.name+'*\n'+
+    '📚 Course: *'+st.course+'*\n\n'+
+    '📅 Due Month(s): *'+months+'*\n'+
+    '💰 Total Due Amount: *'+fmtM(totalDue)+'*\n'+
+    (ndLabel?'📌 Next Fee Due: *'+ndLabel+'*\n':'')+
+    '\n✅ Kripya jaldi se fee jama karein.\n\n'+
+    '_Note: Agar aapne fee jama kar di hai to is message ko ignore karein._\n\n'+
+    '📞 Kisi bhi jankari ke liye hum se sampark karein.\n\n'+
+    '🎯 *Lakshya Defense Academy Team*\n'+
+    '📍 Ranchi, Jharkhand';
+
+  var phone=st.phone.replace(/\D/g,'');
+  if(phone.length===10) phone='91'+phone;
+  var url='https://wa.me/'+phone+'?text='+encodeURIComponent(msg);
+  window.open(url,'_blank');
+  logActivity('WHATSAPP','Sent WA to '+st.name+' — Due: '+fmtM(totalDue));
+}
+
+function sendWAAll(){
+  var dueStudents=students.filter(function(s){ return s.status==='active'&&getUnpaid(s).length>0; });
+  if(dueStudents.length===0){ toast('Koi due student nahi hai!','err'); return; }
+  openModal('💬 Sabko WhatsApp Bhejein',
+  '<div style="margin-bottom:16px;padding:12px;background:#25D36611;border:1px solid #25D36633;border-radius:10px;color:#25D366;font-size:14px">'+
+  ''+dueStudents.length+' students ko WhatsApp message bheja jayega. Ek-ek karke browser mein khulega.</div>'+
+  dueStudents.map(function(st){
+    var tot=getTotalDueAmt(st);
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr)">'+
+      '<div><div style="font-weight:600">'+st.name+'</div><div style="font-size:12px;color:var(--mut)">'+st.phone+'</div></div>'+
+      '<div style="color:var(--org2);font-weight:700">'+fmtM(tot)+'</div></div>';
+  }).join(''),
+  '<button class="btn btn-sm" style="flex:1;background:#25D366;color:#fff;border:none" onclick="sendAllWA()">💬 Sab Bhejo</button>'+
+  '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
+  );
+  window._waDueList=dueStudents;
+}
+
+function sendAllWA(){
+  var list=window._waDueList||[];
+  closeModal();
+  var i=0;
+  function sendNext(){
+    if(i>=list.length){ toast('Sabko WhatsApp bhej diya! 🎉'); return; }
+    sendWA(list[i].id);
+    i++;
+    setTimeout(sendNext,1500);
+  }
+  sendNext();
+}
+
+
+function updateDate(){ var el=document.getElementById('top-date'); if(!el) return; el.textContent=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
+updateDate(); setInterval(updateDate,60000);
+initSupabase();
+</script>
+</body>
+</html>
