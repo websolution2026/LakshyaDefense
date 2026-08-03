@@ -276,8 +276,8 @@ function doLogout(){
 // ══════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG — Change these values with your project details
 // ══════════════════════════════════════════════════════════════════
-var SUPABASE_URL = 'https://desdzvkpgpderoadhteh.supabase.co';   // e.g. https://xxxx.supabase.co
-var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlc2R6dmtwZ3BkZXJvYWRodGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNDc2ODQsImV4cCI6MjA5ODYyMzY4NH0.MleUBY7tL2qZbd-AV2g4MfnOUaWNPVxO_2_gNI8f0Lg';   // Your anon/public key
+var SUPABASE_URL = '';   // e.g. https://xxxx.supabase.co
+var SUPABASE_KEY = '';   // Your anon/public key
 var supabaseReady = false;
 
 function initSupabase(){
@@ -443,19 +443,27 @@ function getFullyPaidKeys(st){
 }
 
 // Unpaid or partially paid months up to today
+// Due date = joining day of each month (e.g. joined 15 Apr → due 15th every month)
 function getUnpaid(st){
   var fullyPaid=getFullyPaidKeys(st);
   var join=new Date(st.joiningDate);
+  var joinDay=join.getDate(); // e.g. 15
   var now2=new Date(); now2.setHours(23,59,59);
   var due=[];
   for(var i=0;i<36;i++){
-    var d=new Date(join.getFullYear(),join.getMonth()+i,join.getDate());
-    if(d>now2) break;
-    var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    // Due date = joining day of (joining month + i)
+    var dueDate=new Date(join.getFullYear(),join.getMonth()+i,joinDay);
+    // Clamp to last day of month if joinDay > days in that month
+    var lastDay=new Date(join.getFullYear(),join.getMonth()+i+1,0).getDate();
+    if(joinDay>lastDay) dueDate=new Date(join.getFullYear(),join.getMonth()+i,lastDay);
+    if(dueDate>now2) break;
+    var key=dueDate.getFullYear()+'-'+String(dueDate.getMonth()+1).padStart(2,'0');
     if(fullyPaid.indexOf(key)===-1){
       var paidAmt=getMonthPaidAmt(st.id,key);
       var dueAmt2=st.mfee-paidAmt;
-      due.push({key:key,label:mkLabel(key),paidAmt:paidAmt,dueAmt:dueAmt2,partial:paidAmt>0&&paidAmt<st.mfee});
+      // dueDateStr for display e.g. "15 May 2026"
+      var dueDateStr=String(dueDate.getDate()).padStart(2,'0')+' '+MNS[dueDate.getMonth()]+' '+dueDate.getFullYear();
+      due.push({key:key,label:mkLabel(key),dueDate:dueDate,dueDateStr:dueDateStr,paidAmt:paidAmt,dueAmt:dueAmt2,partial:paidAmt>0&&paidAmt<st.mfee});
     }
   }
   return due;
@@ -467,14 +475,16 @@ function getTotalDueAmt(st){
 }
 
 function getNextDue(st){
-  // Returns the 1st of next unpaid upcoming month (today or future)
+  // Returns the actual due date = joining day of next unpaid upcoming month
   var fullyPaid=getFullyPaidKeys(st);
   var join=new Date(st.joiningDate);
+  var joinDay=join.getDate();
   var todayD=new Date(); todayD.setHours(0,0,0,0);
   for(var i=0;i<48;i++){
-    var d=new Date(join.getFullYear(),join.getMonth()+i,1);
+    var lastDay=new Date(join.getFullYear(),join.getMonth()+i+1,0).getDate();
+    var day=joinDay>lastDay?lastDay:joinDay;
+    var d=new Date(join.getFullYear(),join.getMonth()+i,day);
     var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-    // Only return a future/current month that is unpaid
     if(d>=todayD && fullyPaid.indexOf(key)===-1) return d.toISOString().split('T')[0];
   }
   return null;
@@ -636,7 +646,7 @@ function viewSt(id){
   ir('Paid Months','<span style="color:var(--grn2)">'+paidCnt+'</span>')+
   ir('Due Months','<span style="color:var(--org2)">'+up.length+'</span>')+
   ir('Due Amount','<span style="color:var(--red2)">'+fmtM(up.length*s.mfee)+'</span>')+
-  ir('Next Due','<span style="color:var(--blu2)">'+fmtD(getNextDue(s))+'</span>')+
+  ir('Next Due Date','<span style="color:var(--blu2)">'+fmtD(getNextDue(s))+'</span> <span style="font-size:11px;color:var(--mut)">(Joining day: '+new Date(s.joiningDate).getDate()+'th every month)</span>')+
   ir('Address',s.address||'—')+
   '<div style="margin-top:14px;padding:10px;background:var(--sf2);border-radius:8px;border:1px solid var(--bdr)">'+
   '<div style="font-size:11px;color:var(--mut);margin-bottom:4px">ENTRY DETAILS</div>'+
@@ -676,7 +686,7 @@ function filterFees(){
       '<div style="margin-top:8px;display:flex;gap:12px;font-size:12px;flex-wrap:wrap">'+
       '<span style="color:var(--grn2)">✅ Fully Paid: '+paidCnt+'</span>'+
       (up.length>0?'<span style="color:var(--org2)">⚠️ Due: '+fmtM(totalDue)+'</span>':'')+
-      (nd?'<span style="color:var(--blu2)">📅 Next: '+fmtD(nd)+'</span>':'')+
+      (nd?'<span style="color:var(--blu2)">📅 Due: '+fmtD(nd)+'</span>':'')+
       '</div>'+
       (up.length>0?'<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">'+up.map(function(u){
         return '<span class="badge" style="background:'+(u.partial?'#7c3aed22':'#ea580c22')+';color:'+(u.partial?'#a78bfa':'var(--org2)')+'" title="'+(u.partial?'Partial: '+fmtM(u.paidAmt)+' paid, '+fmtM(u.dueAmt)+' due':'Full month due')+'">'+u.label+(u.partial?' ⚡':'')+'</span>';
@@ -833,7 +843,7 @@ function filterDue(){
       // Show breakdown if partial exists
       (st.unpaid.some(function(u){return u.partial;})?
         '<div style="margin-top:6px;font-size:11px;color:#a78bfa">⚡ Partial payments — kuch amount already received, baaki due hai</div>':'')+
-      (nd?'<div style="margin-top:8px;font-size:12px;color:var(--blu2)">📅 Next Due: <b>'+fmtD(nd)+'</b></div>':'')+
+      (nd?'<div style="margin-top:8px;font-size:12px;color:var(--blu2)">📅 Next Due Date: <b>'+fmtD(nd)+'</b></div>':'')+
       '</div>'+
       '<div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end">'+
       '<div style="color:var(--red2);font-weight:700;font-size:18px">'+fmtM(st.totalDue)+'</div>'+
@@ -1205,9 +1215,9 @@ function sendWA(sid){
     return u.label;
   }).join(', ');
   var nd=getNextDue(st);
-  // Build upcoming due month label for "Next Due Date"
+  // Build upcoming due date label with actual day e.g. "15 Jun 2026"
   var ndLabel='';
-  if(nd){ var ndParts=nd.split('-'); ndLabel=MNS[+ndParts[1]-1]+' '+ndParts[0]; }
+  if(nd){ var ndD=new Date(nd); ndLabel=String(ndD.getDate()).padStart(2,'0')+' '+MNS[ndD.getMonth()]+' '+ndD.getFullYear(); }
   var msg='🙏 Namaste *'+st.name+' ji*\n\n'+
     '🎯 *Lakshya Defense Academy, Ranchi*\n'+
     '-----------------------------\n\n'+
@@ -1216,7 +1226,7 @@ function sendWA(sid){
     '📚 Course: *'+st.course+'*\n\n'+
     '📅 Due Month(s): *'+months+'*\n'+
     '💰 Total Due Amount: *'+fmtM(totalDue)+'*\n'+
-    (ndLabel?'📌 Next Fee Due: *'+ndLabel+'*\n':'')+
+    (ndLabel?'📌 Next Fee Due Date: *'+ndLabel+'*\n':'')+  
     '\n✅ Kripya jaldi se fee jama karein.\n\n'+
     '_Note: Agar aapne fee jama kar di hai to is message ko ignore karein._\n\n'+
     '📞 Kisi bhi jankari ke liye hum se sampark karein.\n\n'+
