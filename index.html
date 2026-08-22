@@ -590,7 +590,10 @@ function filterAdm(){
       '<td style="color:var(--gold);font-weight:600">'+fmtM(s.mfee)+'</td>'+
       '<td>'+byTag(s.enteredBy||'—')+'</td>'+
       '<td><span class="badge" style="background:'+(s.status==='active'?'#16a34a22':'#dc262622')+';color:'+(s.status==='active'?'var(--grn2)':'var(--red2)')+'">'+s.status+'</span></td>'+
-      '<td><button class="btn btn-outline btn-sm" onclick="toggleSt(\''+s.id+'\')">'+(s.status==='active'?'Deactivate':'Activate')+'</button></td>'+
+      '<td style="display:flex;gap:5px;flex-wrap:wrap">'+
+      '<button class="btn btn-outline btn-sm" onclick="toggleSt(\''+s.id+'\')">'+(s.status==='active'?'Deactivate':'Activate')+'</button>'+
+      '<button class="btn btn-sm" style="background:#7c3aed22;border:1px solid #7c3aed44;color:#a78bfa" onclick="editSt(\''+s.id+'\')"'>✏️ Edit</button>'+
+      '</td>'+
       '</tr>';
   }).join('');
 }
@@ -652,7 +655,81 @@ function viewSt(id){
   '<div style="font-size:11px;color:var(--mut);margin-bottom:4px">ENTRY DETAILS</div>'+
   '<div style="font-size:13px">✏️ Entered by: <b style="color:var(--gold)">'+( s.enteredBy||'—')+'</b></div>'+
   '<div style="font-size:12px;color:var(--mut);margin-top:3px">'+fmtDT(s.enteredAt)+'</div></div>',
-  '<button class="btn btn-outline btn-full" onclick="closeModal()">Close</button>');
+  '<button class="btn btn-sm" style="flex:1;background:#7c3aed22;border:1.5px solid #7c3aed44;color:#a78bfa" onclick="closeModal();editSt(\''+s.id+'\')">">✏️ Edit Student</button>'+
+  '<button class="btn btn-outline" onclick="closeModal()">Close</button>');
+}
+
+
+function editSt(id){
+  var s=students.find(function(x){ return x.id===id; }); if(!s) return;
+  openModal('✏️ Edit Student — '+s.name,
+  '<div class="form-row">'+
+  '<div class="fg"><label>Student Naam *</label><input id="ef-name" value="'+( s.name||'')+'" placeholder="Full Name"/></div>'+
+  '<div class="fg"><label>Father Ka Naam</label><input id="ef-father" value="'+(s.father||'')+'" placeholder="Father Name"/></div>'+
+  '</div>'+
+  '<div class="form-row">'+
+  '<div class="fg"><label>Phone *</label><input id="ef-phone" value="'+(s.phone||'')+'" type="tel"/></div>'+
+  '<div class="fg"><label>Aadhar Number</label><input id="ef-aadhar" value="'+(s.aadhar||'')+'" maxlength="12" placeholder="12-digit Aadhar"/></div>'+
+  '</div>'+
+  '<div class="form-row">'+
+  '<div class="fg"><label>Date of Birth</label><input id="ef-dob" type="date" value="'+(s.dob||'')+'"/></div>'+
+  '<div class="fg"><label>Course</label><select id="ef-course">'+COURSES.map(function(cr){ return '<option'+(cr===s.course?' selected':'')+'>'+cr+'</option>'; }).join('')+'</select></div>'+
+  '</div>'+
+  '<div class="form-row">'+
+  '<div class="fg"><label>Joining Date</label><input id="ef-join" type="date" value="'+(s.joiningDate||'')+'"/></div>'+
+  '<div class="fg"><label>Status</label><select id="ef-status"><option value="active"'+(s.status==='active'?' selected':'')+'>Active</option><option value="inactive"'+(s.status==='inactive'?' selected':'')+'>Inactive</option></select></div>'+
+  '</div>'+
+  '<div class="form-row">'+
+  '<div class="fg"><label>Monthly Fee (₹)</label><input id="ef-mfee" type="number" value="'+(s.mfee||0)+'"/></div>'+
+  '<div class="fg"><label>Admission Fee (₹)</label><input id="ef-afee" type="number" value="'+(s.afee||0)+'"/></div>'+
+  '</div>'+
+  '<div class="fg"><label>Address</label><textarea id="ef-addr" rows="2">'+(s.address||'')+'</textarea></div>'+
+  '<div style="background:var(--sf2);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--mut)">✏️ Edit by: <b style="color:var(--gold)">'+currentUser.display+'</b></div>',
+  '<button class="btn btn-gold" style="flex:1" onclick="submitEdit(\''+id+'\')">💾 Save Changes</button>'+
+  '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
+  );
+}
+
+function submitEdit(id){
+  var s=students.find(function(x){ return x.id===id; }); if(!s) return;
+  var name=document.getElementById('ef-name').value.trim();
+  var phone=document.getElementById('ef-phone').value.trim();
+  if(!name||!phone){ toast('Naam aur Phone zaroori hai!','err'); return; }
+
+  // Track what changed for activity log
+  var changes=[];
+  if(s.name!==name) changes.push('Naam: '+s.name+' → '+name);
+  if(s.phone!==phone) changes.push('Phone: '+s.phone+' → '+phone);
+  var newMfee=+document.getElementById('ef-mfee').value||0;
+  if(s.mfee!==newMfee) changes.push('Monthly Fee: '+fmtM(s.mfee)+' → '+fmtM(newMfee));
+  var newCourse=document.getElementById('ef-course').value;
+  if(s.course!==newCourse) changes.push('Course: '+s.course+' → '+newCourse);
+  var newStatus=document.getElementById('ef-status').value;
+  if(s.status!==newStatus) changes.push('Status: '+s.status+' → '+newStatus);
+
+  // Apply updates
+  s.name     = name;
+  s.father   = document.getElementById('ef-father').value.trim();
+  s.phone    = phone;
+  s.aadhar   = document.getElementById('ef-aadhar').value.trim();
+  s.dob      = document.getElementById('ef-dob').value;
+  s.course   = newCourse;
+  s.joiningDate = document.getElementById('ef-join').value;
+  s.mfee     = newMfee;
+  s.afee     = +document.getElementById('ef-afee').value||0;
+  s.address  = document.getElementById('ef-addr').value.trim();
+  s.status   = newStatus;
+  s.editedBy = currentUser.display;
+  s.editedAt = now();
+
+  // Update fee sname references too
+  fees.forEach(function(f){ if(f.sid===id) f.sname=s.name; });
+
+  save();
+  logActivity('EDIT_STUDENT', name+(changes.length?' | '+changes.join(', '):''));
+  closeModal();
+  toast(name+' ki details update ho gayi! ✅');
+  renderAdmissions();
 }
 
 // ══════════════════════════════════════════════════════════════════
